@@ -1,0 +1,123 @@
+import os
+import tkinter as tk
+from tkinter import ttk, filedialog, messagebox
+from cryptography.fernet import Fernet
+
+# GUI
+window = tk.Tk()
+window.title("Nimbus Encryption/Decryption - .docx")
+window.geometry("600x150")  # Window size
+window.configure(bg="black")  # Background color
+
+# Button
+style = ttk.Style()
+style.configure("Custom.TButton", background="green", foreground="black", font=("Arial", 12))
+
+# Generera Key
+def generate_key():
+    key = Fernet.generate_key()
+    key_path = filedialog.asksaveasfilename(defaultextension=".key", filetypes=[("Key files", "*.key")])
+    if key_path:
+        with open(key_path, "wb") as key_file:
+            key_file.write(key)
+        entry_key.delete(0, tk.END)
+        entry_key.insert(tk.END, key.decode())
+        messagebox.showinfo("Success", "Key generated and saved.")
+
+# Encryption and decryption
+def encrypt_and_save():
+    key = entry_key.get().encode()
+    if not key:
+        messagebox.showerror("Error", "Key not provided. Generate a key first.")
+        return
+
+    # Path
+    file_path = entry_upload.get()
+    if not file_path.endswith(".docx"):
+        messagebox.showerror("Error", "Please upload a .docx file.")
+        return
+
+    try:
+        # Document
+        with open(file_path, 'rb') as file:
+            doc_content = file.read()
+
+        # Encrypt dokument
+        cipher_suite = Fernet(key)
+        encrypted_content = cipher_suite.encrypt(doc_content)
+
+        # Spara dokumentet
+        save_path = filedialog.asksaveasfilename(defaultextension=".enc", filetypes=[("Encrypted files", "*.enc")])
+        if save_path:
+            with open(save_path, 'wb') as file:
+                file.write(encrypted_content)
+
+            messagebox.showinfo("Success", "File encrypted.")
+    except Exception as e:
+        messagebox.showerror("Error", f"ERROR, Try again: {str(e)}")
+
+def decrypt_and_save():
+    key = entry_key.get().encode()
+    if not key:
+        messagebox.showerror("Error", "Key not provided. Generate a key first.")
+        return
+
+    # File path
+    file_path = entry_upload.get()
+    if not file_path.endswith(".enc"):
+        messagebox.showerror("Error", "Upload an encrypted file.")
+        return
+
+    try:
+        # Ladda encrypted file
+        with open(file_path, 'rb') as file:
+            encrypted_content = file.read()
+
+        # Decrypt file
+        cipher_suite = Fernet(key)
+        decrypted_content = cipher_suite.decrypt(encrypted_content)
+
+        # Destination
+        save_path = filedialog.asksaveasfilename(defaultextension=".docx", filetypes=[("Word files", "*.docx")])
+        if save_path:
+            # Skriv till  nytt doc
+            with open(save_path, 'wb') as file:
+                file.write(decrypted_content)
+
+            messagebox.showinfo("Success", "File decrypted and saved.")
+    except Exception as e:
+        messagebox.showerror("Error", f"Error, try again. make sure it is a .docx: {str(e)}")
+
+# Label key
+label_key = tk.Label(window, text="Generated Key:", bg="black", fg="green", font=("Arial", 12))
+label_key.grid(row=0, column=0, padx=10, pady=10, sticky="w")
+
+# Entry key
+entry_key = tk.Entry(window, bg="green", fg="black", width=50)
+entry_key.grid(row=0, column=1, padx=10, pady=5, columnspan=2)
+
+# file upload
+label_upload = tk.Label(window, text="Upload File:", bg="black", fg="green", font=("Arial", 12))
+label_upload.grid(row=1, column=0, padx=10, pady=10, sticky="w")
+
+# file path
+entry_upload = tk.Entry(window, width=40, bg="green", fg="black")
+entry_upload.grid(row=1, column=1, padx=10, pady=5)
+
+# upload file
+button_upload = ttk.Button(window, text="Upload", command=lambda: entry_upload.insert(tk.END, filedialog.askopenfilename()), style="Custom.TButton")
+button_upload.grid(row=1, column=2, padx=10, pady=10, sticky="w")
+
+# generate key
+button_generate_key = ttk.Button(window, text="Generate Key", command=generate_key, style="Custom.TButton")
+button_generate_key.grid(row=2, column=0, padx=10, pady=10)
+
+# encrypt and save
+button_encrypt = ttk.Button(window, text="Encrypt", command=encrypt_and_save, style="Custom.TButton")
+button_encrypt.grid(row=2, column=1, padx=10, pady=10)
+
+# decrypt and save
+button_decrypt = ttk.Button(window, text="Decrypt", command=decrypt_and_save, style="Custom.TButton")
+button_decrypt.grid(row=2, column=2, padx=10, pady=10)
+
+window.mainloop()
