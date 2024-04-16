@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nimbus Encryption/Decryption - .docx</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background-color: black;
+    color: green;
+    padding: 20px;
+  }
+  input[type="text"] {
+    padding: 5px;
+    width: 400px;
+  }
+  input[type="file"] {
+    display: none;
+  }
+  label {
+    background-color: green;
+    color: black;
+    padding: 5px 10px;
+    cursor: pointer;
+  }
+  button {
+    background-color: green;
+    color: black;
+    padding: 5px 10px;
+    border: none;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+
+<h1>Nimbus Encryption/Decryption - .docx</h1>
+
+<label for="key">Generated Key:</label><br>
+<input type="text" id="key" readonly><br><br>
+
+<label for="file">Upload File:</label><br>
+<input type="text" id="file" readonly>
+<label for="file" id="fileLabel">Choose File</label><br><br>
+
+<button onclick="generateKey()">Generate Key</button>
+<button onclick="encryptAndSave()">Encrypt</button>
+<button onclick="decryptAndSave()">Decrypt</button>
+
+<script>
+  function generateKey() {
+    const key = crypto.getRandomValues(new Uint8Array(32));
+    document.getElementById('key').value = btoa(String.fromCharCode(...key));
+  }
+
+  function encryptAndSave() {
+    const key = document.getElementById('key').value;
+    if (!key) {
+      alert("Key not provided. Generate a key first.");
+      return;
+    }
+
+    const file = document.getElementById('file').files[0];
+    if (!file || !file.name.endsWith('.docx')) {
+      alert("Please upload a .docx file.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(event) {
+      const content = event.target.result;
+      const encryptedContent = btoa(content); // Dummy encryption, replace with your encryption logic
+      const blob = new Blob([encryptedContent], { type: 'application/octet-stream' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = file.name.replace('.docx', '') + '.enc';
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+    };
+    reader.readAsBinaryString(file);
+  }
+
+  function decryptAndSave() {
+    const key = document.getElementById('key').value;
+    if (!key) {
+      alert("Key not provided. Generate a key first.");
+      return;
+    }
+
+    const file = document.getElementById('file').files[0];
+    if (!file || !file.name.endsWith('.enc')) {
+      alert("Upload an encrypted file.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(event) {
+      const content = event.target.result;
+      const decryptedContent = atob(content); // Dummy decryption, replace with your decryption logic
+      const blob = new Blob([decryptedContent], { type: 'application/octet-stream' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = file.name.replace('.enc', '') + '_decrypted.docx';
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+    };
+    reader.readAsBinaryString(file);
+  }
+
+  document.getElementById('file').addEventListener('change', function() {
+    document.getElementById('fileLabel').innerText = this.files[0].name;
+  });
+</script>
+
+</body>
+</html>
