@@ -6,8 +6,8 @@ from cryptography.fernet import Fernet
 # GUI
 window = tk.Tk()
 window.title("Nimbus Encryption/Decryption - .docx")
-window.geometry("600x150")  # Window size
-window.configure(bg="black")  # Background color
+window.geometry("600x150")  # Window 
+window.configure(bg="black")  # Bakgrund
 
 # Button
 style = ttk.Style()
@@ -80,7 +80,7 @@ def decrypt_and_save():
         # Destination
         save_path = filedialog.asksaveasfilename(defaultextension=".docx", filetypes=[("Word files", "*.docx")])
         if save_path:
-            # Skriv till  nytt doc
+            # Skriv till nytt doc
             with open(save_path, 'wb') as file:
                 file.write(decrypted_content)
 
